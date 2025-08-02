@@ -6,26 +6,19 @@ Een professionele web-applicatie voor het genereren van ethische casussen op het
 - **Technologie onderwerpen**: AI, Data & Privacy, Digitale Transformatie, Cybersecurity, Automatisering, Toezicht & Monitoring
 - **Realistische casussen**: Gedetailleerde, Nederlandse context-specifieke ethische dilemma's
 - **Belanghebbenden analyse**: Overzicht van stakeholders met hun belangen en perspectieven
-- **Veilige API**: Backend API route beschermt de Mistral AI API key
-## Deployment naar Vercel
-### Stap 1: Vercel CLI installeren
-```bash
-npm i -g vercel
-```
-### Stap 2: Project deployen
-```bash
-vercel
-```
+### Stap 1: Push naar GitHub
+1. Push je project naar een GitHub repository
+
+### Stap 2: Verbind met Vercel
+1. Ga naar [vercel.com](https://vercel.com) en log in
+2. Klik op "New Project"
+3. Selecteer je GitHub repository
+4. Klik op "Deploy"
+
 ### Stap 3: Environment variabele instellen
-Na deployment, stel je API key in via Vercel dashboard:
+Na deployment, stel je API key in:
 1. Ga naar je project in Vercel dashboard
 2. Navigeer naar Settings > Environment Variables
-3. Voeg toe: `MISTRAL_API_KEY` met je Mistral AI API key als waarde
-4. Redeploy het project
-### Alternatief: Via Vercel CLI
-```bash
-vercel env add MISTRAL_API_KEY
-```
 ## Lokale Development
 1. Clone het project
 2. Installeer dependencies: `npm install`

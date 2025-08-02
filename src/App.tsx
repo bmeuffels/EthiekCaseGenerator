@@ -143,8 +143,6 @@ function App() {
   const [result, setResult] = useState<CaseResult | null>(null);
   const [showResult, setShowResult] = useState(false);
 
-  const apiKey = import.meta.env.VITE_MISTRAL_API_KEY;
-
   const toggleField = (fieldId: string) => {
     setSelectedFields(prev => 
       prev.includes(fieldId) 
@@ -162,7 +160,7 @@ function App() {
   };
 
   const generateCase = async () => {
-    if (selectedFields.length === 0 || selectedTopics.length === 0 || !apiKey) return;
+    if (selectedFields.length === 0 || selectedTopics.length === 0) return;
 
     setIsGenerating(true);
     setShowResult(false);
@@ -175,62 +173,31 @@ function App() {
       TECH_TOPICS.find(t => t.id === id)?.name
     ).join(', ');
 
-    const prompt = `Genereer een realistische ethische casus voor professionals uit ${selectedFieldNames} over ${selectedTopicNames}.
-
-Geef de output in het volgende JSON formaat:
-{
-  "case": "Een gedetailleerde, levendige beschrijving van de ethische casus (minimaal 200 woorden). Maak het realistisch en relevant voor de geselecteerde vakgebieden. Beschrijf de situatie, de betrokken partijen, en de ethische dilemma's die zich voordoen.",
-  "stakeholders": [
-    {
-      "role": "Naam van de rol/functie",
-      "interests": "Wat zijn de belangen van deze stakeholder",
-      "perspective": "Welk standpunt neemt deze stakeholder waarschijnlijk in"
-    }
-  ]
-}
-
-Zorg voor minimaal 4-6 verschillende stakeholders met verschillende perspectieven. Maak de casus complex genoeg voor een goede discussie, maar wel begrijpelijk. Gebruik Nederlandse taal en zorg dat de casus relevant is voor de Nederlandse context.`;
 
     try {
-      const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+      const response = await fetch('/api/generate-case', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'mistral-large-latest',
-          messages: [
-            {
-              role: 'user',
-              content: prompt
-            }
-          ],
-          temperature: 0.8
+          selectedFields: selectedFieldNames.split(', '),
+          selectedTopics: selectedTopicNames.split(', ')
         })
       });
 
       if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(errorData.error || `API Error: ${response.status}`);
       }
 
-      const data = await response.json();
-      const content = data.choices[0].message.content;
-      
-      // Parse JSON from the response
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsedResult = JSON.parse(jsonMatch[0]);
-        setResult(parsedResult);
-        setShowResult(true);
-      } else {
-        throw new Error('Geen geldige JSON gevonden in response');
-      }
+      const result = await response.json();
+      setResult(result);
+      setShowResult(true);
     } catch (error) {
       console.error('Error:', error);
-      // Fallback result for demo purposes
       setResult({
-        case: "Er is een fout opgetreden bij het genereren van de casus. Controleer je API configuratie en probeer het opnieuw.",
+        case: `Er is een fout opgetreden bij het genereren van de casus: ${error.message}. Probeer het opnieuw.`,
         stakeholders: []
       });
       setShowResult(true);
@@ -245,38 +212,6 @@ Zorg voor minimaal 4-6 verschillende stakeholders met verschillende perspectieve
     setResult(null);
     setShowResult(false);
   };
-
-  if (!apiKey) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 flex items-center justify-center relative overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        </div>
-        
-        <div className="text-center py-12 relative z-10 backdrop-blur-sm bg-white/5 rounded-3xl border border-white/10 shadow-2xl p-8 max-w-md mx-4">
-          <div className="relative mb-6">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center mx-auto shadow-2xl">
-              <Scale className="w-10 h-10 text-white" />
-            </div>
-          </div>
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-3">
-            API Key Vereist
-          </h2>
-          <p className="text-gray-300 mb-6 leading-relaxed">
-            Configureer je Mistral AI API key in het .env bestand om de casus generator te gebruiken.
-          </p>
-          <div className="bg-slate-900/50 rounded-xl p-4 text-left text-sm font-mono text-blue-300 border border-blue-500/20">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-              <span className="text-blue-400">.env</span>
-            </div>
-            VITE_MISTRAL_API_KEY=your_api_key_here
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 relative overflow-hidden">

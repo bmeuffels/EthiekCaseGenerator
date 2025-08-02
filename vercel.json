@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "api/generate-case.js": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "MISTRAL_API_KEY": "@mistral-api-key"
+  }
+}
